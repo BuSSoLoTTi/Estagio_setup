@@ -22,13 +22,6 @@ public class Main {
 
 
 
-
-        /*** Eduardo esteve aqui ***/
-
-
-        /** vou fazer comida */
-
-
         try {
             Scraper scraper = new Scraper("https://www.magazineluiza.com.br/");
             List<String> linknovos = scraper.getLinkJsoup();

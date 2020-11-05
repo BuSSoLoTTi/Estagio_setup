@@ -1,4 +1,4 @@
-package tarefa_2;
+package Coletor;
 
 public class Produto {
     private String nome;

@@ -1,15 +1,13 @@
-package tarefa_2;
+package Coletor;
 
+import Connect.Http;
+import Connect.ProxyAuth;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.net.*;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -17,13 +15,14 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+@SuppressWarnings("ALL")
 public class Scraper {
 
     private static final String USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/601.6.17 (KHTML, like Gecko) Version/9.1.1 Safari/601.6.17";
+    Document document;
     private String uri;
     private ProxyAuth proxyAuth;
     private String html;
-    Document document;
 
     public Scraper() {
     }
@@ -40,31 +39,13 @@ public class Scraper {
     }
 
     public void scan() throws IOException, InterruptedException {
-        if (proxyAuth != null) {
+        if (proxyAuth != null)
+           this.html = Http.connect(this.uri, this.proxyAuth).body();
+        else
+            this.html = Http.connect(this.uri).body();
 
-            HttpClient client = HttpClient.newBuilder()
-                    .proxy(ProxySelector.of(new InetSocketAddress(this.proxyAuth.getHostname(), this.proxyAuth.getPort())))
-                    .authenticator(this.proxyAuth)
-                    .build();
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .setHeader("User-Agent", USER_AGENT)
-                    .uri(URI.create(this.uri))
-                    .build();
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            this.html = response.body();
-            this.document = Jsoup.parse(this.html);
-        } else {
-            HttpClient client = HttpClient.newHttpClient();
-
-            HttpRequest request = HttpRequest.newBuilder()
-                    .setHeader("User-Agent", USER_AGENT)
-                    .uri(URI.create(this.uri))
-                    .build();
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            this.html = response.body();
-            this.document = Jsoup.parse(this.html);
-        }
+        this.document = Jsoup.parse(html);
+//        this.proxyAuth!=null ? Http.connect(this.uri,this.proxyAuth):Http.connect(this.uri);
     }
 
     public boolean isProduto() {
@@ -135,7 +116,7 @@ public class Scraper {
 
         List<String> strings = new ArrayList<>();
         Elements elements = document.select("[href^=https://www.magazineluiza.com.br]");
-        for (Element element :elements) {
+        for (Element element : elements) {
             strings.add(element.attr("href"));
         }
         return strings;
@@ -147,40 +128,6 @@ public class Scraper {
 
     public void setUri(String uri) {
         this.uri = uri;
-    }
-
-}
-
-class ProxyAuth extends Authenticator {
-
-    private String hostname;
-    private int port;
-    private String user;
-    private String password;
-
-    public ProxyAuth(String hostname, int port, String user, String password) {
-        this.hostname = hostname;
-        this.port = port;
-        this.user = user;
-        this.password = password;
-    }
-
-    public ProxyAuth(String hostname, int port) {
-        this.hostname = hostname;
-        this.port = port;
-    }
-
-    @Override
-    protected PasswordAuthentication getPasswordAuthentication() {
-        return new PasswordAuthentication(this.user, this.password.toCharArray());
-    }
-
-    public String getHostname() {
-        return hostname;
-    }
-
-    public int getPort() {
-        return port;
     }
 
 }

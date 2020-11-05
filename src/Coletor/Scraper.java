@@ -115,7 +115,7 @@ public class Scraper {
     public List<String> getLinkJsoup() {
 
         List<String> strings = new ArrayList<>();
-        Elements elements = document.select("[href^=https://www.magazineluiza.com.br]");
+        Elements elements = document.select("[href^=https://www.magazineluiza.com.br/]");
         for (Element element : elements) {
             strings.add(element.attr("href"));
         }

@@ -6,10 +6,7 @@ import Coletor.Scraper;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 public class Main {
 
@@ -17,7 +14,7 @@ public class Main {
     public static void main(String[] args) {
         List<String> linkProdutos = new CopyOnWriteArrayList<>();
         Set<String> linkconheceidos = ConcurrentHashMap.newKeySet();
-        ExecutorService executor = Executors.newFixedThreadPool(8);
+        ExecutorService executor = Executors.newFixedThreadPool(50);
         Scraper scraper = null;
         try {
             scraper = new Scraper("https://www.magazineluiza.com.br/");
@@ -29,10 +26,23 @@ public class Main {
 
         System.out.println(pesquisar.size());
 
-        while (linkProdutos.size()<100) {
+        while (linkProdutos.size() < 100) {
+            for (int i = 0; i < 5; i++) {
                 executor.execute(() -> getLinksNew(pesquisar.remove(0), linkconheceidos, pesquisar, linkProdutos));
+            }
+            try {
+                ThreadPoolExecutor poolExecutor = (ThreadPoolExecutor) executor;
+                while (poolExecutor.getQueue().size()>1){
+                }
+                System.out.printf("nova rodada de tarefas \n" +
+                        "linkProdutos: %d\n" +
+                        "pesquisar: %d \n",linkProdutos.size(),pesquisar.size());
+                Thread.sleep(2000);
 
 
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
         executor.shutdownNow();
